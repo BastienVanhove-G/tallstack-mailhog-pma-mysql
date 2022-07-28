@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  db:
+    image: ${MYSQL_IMAGE_NAME}
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - 3306:3306
+  phpmyadmin:
+    image: ${PMA_IMAGE_NAME}
+    container_name: pma
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    restart: always
+    ports:
+      - ${PMA_PORT}:80
+    volumes:
+      - /sessions
+      - ${PHP_INI-./config/php/php.ini}:/usr/local/etc/php/conf.d/php-phpmyadmin.ini
+  mailhog:
+     image: ${MAIL_HOG_IMAGE}
+     ports:
+       - 1025:1025 # smtp server
+       - ${MAIL_HOG_PORT}:8025 # web ui
+volumes:
+  dbdata:
